@@ -1,0 +1,28 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Mintis Bedrock-preset — gebaseerd op roots/bedrock's eigen Renovate-config. Wekelijks voor plugins, direct voor WordPress-core (security wacht niet). Automerge staat bewust UIT tot de pilot vertrouwd voelt.",
+  "extends": [
+    "config:recommended",
+    "schedule:weekly",
+    ":semanticCommitsDisabled"
+  ],
+  "timezone": "Europe/Amsterdam",
+  "ignoreDeps": ["php"],
+  "commitMessageAction": "Bump",
+  "packageRules": [
+    {
+      "groupName": "wordpress-plugins",
+      "matchPackageNames": ["wpackagist-plugin/**"]
+    },
+    {
+      "matchPackageNames": ["roots/wordpress{/,}**"],
+      "schedule": ["at any time"],
+      "prPriority": 10
+    },
+    {
+      "description": "Thema's nooit automatisch voorstellen — beleid: handmatig",
+      "matchPackageNames": ["wpackagist-theme/**"],
+      "enabled": false
+    }
+  ]
+}
