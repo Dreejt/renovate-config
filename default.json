@@ -1,28 +1,33 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "Mintis Bedrock-preset — gebaseerd op roots/bedrock's eigen Renovate-config. Wekelijks voor plugins, direct voor WordPress-core (security wacht niet). Automerge staat bewust UIT tot de pilot vertrouwd voelt.",
+  "description": "Mintis Bedrock-preset — alleen WordPress: plugins wekelijks (gegroepeerd), core direct (security wacht niet). Alle andere ecosystemen (npm, GitHub Actions, …) en overige composer-pakketten staan bewust uit. Automerge staat bewust UIT tot de pilot vertrouwd voelt.",
   "extends": [
     "config:recommended",
     "schedule:weekly",
     ":semanticCommitsDisabled"
   ],
   "timezone": "Europe/Amsterdam",
+  "enabledManagers": ["composer"],
   "ignoreDeps": ["php"],
   "commitMessageAction": "Bump",
   "packageRules": [
     {
-      "groupName": "wordpress-plugins",
-      "matchPackageNames": ["wpackagist-plugin/**"]
+      "description": "Standaard alles uit — alleen wat hieronder expliciet aan staat mag PR's maken",
+      "matchPackageNames": ["*"],
+      "enabled": false
     },
     {
+      "description": "WordPress-plugins: wekelijks, gegroepeerd in één PR",
+      "matchPackageNames": ["wpackagist-plugin/**"],
+      "enabled": true,
+      "groupName": "wordpress-plugins"
+    },
+    {
+      "description": "WordPress-core: direct, security wacht niet",
       "matchPackageNames": ["roots/wordpress{/,}**"],
+      "enabled": true,
       "schedule": ["at any time"],
       "prPriority": 10
-    },
-    {
-      "description": "Thema's nooit automatisch voorstellen — beleid: handmatig",
-      "matchPackageNames": ["wpackagist-theme/**"],
-      "enabled": false
     }
   ]
 }
