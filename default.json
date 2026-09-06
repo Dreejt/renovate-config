@@ -55,11 +55,12 @@
       "enabled": true
     },
     {
-      "description": "Core wacht nooit op de weekcyclus — security-releases komen los.",
+      "description": "Core wacht nooit op de weekcyclus — security-releases komen los. commitMessageExtra: een major-PR heet standaard 'to v7', ook als de branch al 7.1 pint; met prettyNewVersion staat de echte versie in de titel.",
       "matchPackageNames": ["roots/wordpress{/,}**"],
       "enabled": true,
       "schedule": ["at any time"],
-      "prPriority": 10
+      "prPriority": 10,
+      "commitMessageExtra": "to {{{prettyNewVersion}}}"
     },
     {
       "description": "Majors altijd met de hand: die breken thema's, niet de beveiliging.",
