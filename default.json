@@ -1,26 +1,23 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "description": [
+    "BESLUIT 25-9-2026, aangescherpt 28-9 — Renovate is Tjeerds ONTWIKKELOMGEVING: alleen de composer-BIBLIOTHEKEN in de Bedrock-repo's (Bedrock-basis, thema-afhankelijkheden, eigen pakketten). Het staat los van het site-onderhoud: WordPress-core en plugins zijn bestanden op schijf en worden door mintis-updater met wp-cli bijgewerkt; op productie telt alleen wat er draait. Daarom staan de core- en pluginregels hieronder UIT en de bibliotheken AAN: maandelijks één gegroepeerde PR per repo voor patch en minor, majors apart ter review. Automerge blijft uit tot er een CI-check op de PR draait.",
     "Mintis Bedrock-preset — gebaseerd op roots/bedrock's eigen Renovate-config. Wekelijks voor plugins, direct voor WordPress-core en voor alles waar een kwetsbaarheid onder ligt. Automerge staat bewust UIT; onderaan staat wanneer dat aan mag.",
-
     "BEREIK — twee sloten op de deur, want een Bedrock-repo bevat véél meer dan de site zelf. (1) enabledManagers: alleen composer — geen npm (thema-builds), geen Dockerfile, geen GitHub Actions. (2) ignorePaths: alles onder web/ ligt buiten beeld. Daar staan meegecommitte composer.json's van plugins (acf-extended-pro/…/stripe, wp-sync-db), van WordPress-core zelf (wp-includes/sodium_compat) en van thema's. Die pakketten horen bij de plugin- of core-release en werk je bij door de plugin te bumpen, niet door hun libraries los te updaten. LET OP: ignorePaths vervangt de lijst uit config:recommended (:ignoreModulesAndTests) — vandaar dat vendor/ en node_modules hier opnieuw staan. Alleen de composer.json in de repo-root telt dus mee.",
-
     "rangeStrategy — zonder dit gebeurt er voor plugins NIETS. Constraints als ^6.4 laten een nieuwe 6.5 al toe, dus valt er in composer.json niets te wijzigen en opent Renovate geen PR — terwijl composer.lock op de oude versie blijft staan. Alleen exact gepinde pakketten (roots/wordpress) leverden zo een PR op. Met update-lockfile stelt Renovate ook de lock-wijziging voor.",
-
     "vulnerabilityAlerts — een update waar een kwetsbaarheid onder ligt wacht niet op de weekcyclus: eigen label, bovenaan de wachtrij, buiten het schema om. LET OP: dit hangt aan GitHub's advisory-database, en die dekt wpackagist-plugins slecht — WordPress-plugin-CVE's staan bij Wordfence en Patchstack, niet bij GitHub. Verwacht hier dus core, nauwelijks plugins. Dat gat vult mintis-updater: die kent de urgente treffers (CISA KEV, EPSS, onauth-misbruikbaar) en wijst de repo aan waar je een ronde moet forceren. osvVulnerabilityAlerts raadpleegt daarnaast OSV.dev: kost niets, vangt af en toe iets dat GitHub mist.",
-
     "PAKKETPREFIXEN — twee registries naast elkaar. WPackagist is in maart 2026 door WP Engine overgenomen; Roots bracht WP Packages uit als open-source vervanger (repo.wp-packages.org), met andere prefixen: wp-plugin/* en wp-theme/* in plaats van wpackagist-plugin/* en wpackagist-theme/*. De migratie loopt nog — daarom matchen de regels hieronder op BEIDE. Match je maar op één, dan valt de andere helft stil zonder foutmelding. Let op: northrobin staat nog op de oude URL repo.wp-composer.com; die hoort repo.wp-packages.org te worden.",
-
-    "AUTOMERGE — staat UIT, en blijft uit tot drie dingen kloppen: (1) composer.lock loopt niet meer achter op wat er draait — nu nog 23 sites, waar een merge + deploy de site zou TERUGZETTEN; (2) er draait een CI-check op de PR (composer validate + composer audit --locked), anders merge je blind; (3) je hebt een stuk of vijf PR's met de hand zien landen en vertrouwt het. Zet hem daarna alleen aan voor patch-updates van plugins — nooit voor core of majors, want dat is juist wat je wilt zien."
+    "AUTOMERGE — staat UIT, en blijft uit tot drie dingen kloppen: (1) composer.lock loopt niet meer achter op wat er draait — nu nog 23 sites, waar een merge + deploy de site zou TERUGZETTEN; (2) er draait een CI-check op de PR (composer validate + composer audit --locked), anders merge je blind; (3) je hebt een stuk of vijf PR's met de hand zien landen en vertrouwt het. Zet hem daarna alleen aan voor patch-updates van plugins — nooit voor core of majors, want dat is juist wat je wilt zien.",
+    "LOCKFILE-ONDERHOUD staat UIT (28-9-2026). Zo'n PR draait feitelijk `composer update` over alles, dus óók over de plugins en core die nog in composer.json staan; mergen + deployen zou dan via `composer install` andere pluginversies neerzetten dan er draaien (model B: de lock blijft op de installatieversie, de run werkt de bestanden bij). Bibliotheken krijgen hun lock-wijziging per PR via rangeStrategy update-lockfile."
   ],
   "extends": [
     "config:recommended",
-    "schedule:weekly",
     ":semanticCommitsDisabled"
   ],
   "timezone": "Europe/Amsterdam",
-
-  "enabledManagers": ["composer"],
+  "enabledManagers": [
+    "composer"
+  ],
   "ignorePaths": [
     "**/web/wp/**",
     "**/web/app/plugins/**",
@@ -30,50 +27,82 @@
     "**/vendor/**",
     "**/node_modules/**"
   ],
-
   "rangeStrategy": "update-lockfile",
-  "ignoreDeps": ["php"],
+  "ignoreDeps": [
+    "php"
+  ],
   "commitMessageAction": "Bump",
-
   "vulnerabilityAlerts": {
-    "schedule": ["at any time"],
+    "schedule": [
+      "at any time"
+    ],
     "prPriority": 20,
-    "labels": ["security"]
+    "labels": [
+      "security"
+    ]
   },
   "osvVulnerabilityAlerts": true,
-
   "packageRules": [
     {
-      "description": "Alles staat uit; hieronder zetten we alleen WordPress weer aan. Zo levert een nieuw pakket in composer.json (of een gemist pad) nooit ongevraagd een PR op. Keerzijde, bewust: de php-libraries in de root (phpdotenv, oscarotero/env, composer/installers) blijven staan waar ze staan — ook als daar een advisory op komt. Die volgen we via mintis-updater, niet via Renovate.",
-      "matchPackageNames": ["*"],
+      "description": "Bibliotheken (alles wat via composer komt en géén WordPress-core of -plugin is): patch en minor maandelijks gegroepeerd in één PR per repo.",
+      "matchPackageNames": [
+        "*"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor",
+        "pin",
+        "digest"
+      ],
+      "groupName": "composer-bibliotheken",
+      "enabled": true,
+      "automerge": false
+    },
+    {
+      "description": "Majors van bibliotheken: apart, ter review, met label.",
+      "matchPackageNames": [
+        "*"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "enabled": true,
+      "labels": [
+        "major-handmatig"
+      ],
+      "automerge": false
+    },
+    {
+      "description": "WordPress-core en plugins: UIT. Deze pakketten horen niet meer in composer.json (overgang per repo, plan §8); zolang ze er nog staan laat Renovate ze met rust — de run werkt ze bij met wp-cli en het plugin-alarm ziet het.",
+      "matchPackageNames": [
+        "roots/wordpress{/,}**",
+        "wpackagist-plugin/**",
+        "wp-plugin/**",
+        "wpengine/advanced-custom-fields-pro",
+        "sybrew/the-seo-framework-extension-manager",
+        "mintis/acf-extended-pro",
+        "mintis/updraftplus-premium",
+        "admin-columns/admin-columns-pro",
+        "ploi/ploi-wordpress-plugin"
+      ],
       "enabled": false
     },
     {
-      "description": "WordPress-plugins: wekelijks, gegroepeerd in één PR.",
-      "groupName": "wordpress-plugins",
-      "matchPackageNames": ["wpackagist-plugin/**", "wp-plugin/**"],
-      "enabled": true
-    },
-    {
-      "description": "Core wacht nooit op de weekcyclus — security-releases komen los. commitMessageExtra: een major-PR heet standaard 'to v7', ook als de branch al 7.1 pint; met prettyNewVersion staat de echte versie in de titel.",
-      "matchPackageNames": ["roots/wordpress{/,}**"],
-      "enabled": true,
-      "schedule": ["at any time"],
-      "prPriority": 10,
-      "commitMessageExtra": "to {{{prettyNewVersion}}}"
-    },
-    {
-      "description": "Majors altijd met de hand: die breken thema's, niet de beveiliging.",
-      "matchUpdateTypes": ["major"],
-      "automerge": false,
-      "labels": ["major-handmatig"]
-    },
-    {
-      "description": "Thema's nooit automatisch voorstellen — beleid: handmatig.",
-      "matchPackageNames": ["wpackagist-theme/**", "wp-theme/**"],
+      "description": "Eigen code op een branch (dev-main) rol je zelf uit met composer update <pakket> in de checkout; geen PR's.",
+      "matchPackageNames": [
+        "dreejt/**",
+        "mintis/theme-core",
+        "mintis/installer",
+        "mintis/webfont-checker"
+      ],
       "enabled": false
     }
   ],
-
-  "automerge": false
+  "automerge": false,
+  "schedule": [
+    "before 6am on the first day of the month"
+  ],
+  "lockFileMaintenance": {
+    "enabled": false
+  }
 }
