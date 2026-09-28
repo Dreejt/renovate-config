@@ -8,7 +8,8 @@
     "vulnerabilityAlerts — een update waar een kwetsbaarheid onder ligt wacht niet op de weekcyclus: eigen label, bovenaan de wachtrij, buiten het schema om. LET OP: dit hangt aan GitHub's advisory-database, en die dekt wpackagist-plugins slecht — WordPress-plugin-CVE's staan bij Wordfence en Patchstack, niet bij GitHub. Verwacht hier dus core, nauwelijks plugins. Dat gat vult mintis-updater: die kent de urgente treffers (CISA KEV, EPSS, onauth-misbruikbaar) en wijst de repo aan waar je een ronde moet forceren. osvVulnerabilityAlerts raadpleegt daarnaast OSV.dev: kost niets, vangt af en toe iets dat GitHub mist.",
     "PAKKETPREFIXEN — twee registries naast elkaar. WPackagist is in maart 2026 door WP Engine overgenomen; Roots bracht WP Packages uit als open-source vervanger (repo.wp-packages.org), met andere prefixen: wp-plugin/* en wp-theme/* in plaats van wpackagist-plugin/* en wpackagist-theme/*. De migratie loopt nog — daarom matchen de regels hieronder op BEIDE. Match je maar op één, dan valt de andere helft stil zonder foutmelding. Let op: northrobin staat nog op de oude URL repo.wp-composer.com; die hoort repo.wp-packages.org te worden.",
     "AUTOMERGE — staat UIT, en blijft uit tot drie dingen kloppen: (1) composer.lock loopt niet meer achter op wat er draait — nu nog 23 sites, waar een merge + deploy de site zou TERUGZETTEN; (2) er draait een CI-check op de PR (composer validate + composer audit --locked), anders merge je blind; (3) je hebt een stuk of vijf PR's met de hand zien landen en vertrouwt het. Zet hem daarna alleen aan voor patch-updates van plugins — nooit voor core of majors, want dat is juist wat je wilt zien.",
-    "LOCKFILE-ONDERHOUD staat UIT (28-9-2026). Zo'n PR draait feitelijk `composer update` over alles, dus óók over de plugins en core die nog in composer.json staan; mergen + deployen zou dan via `composer install` andere pluginversies neerzetten dan er draaien (model B: de lock blijft op de installatieversie, de run werkt de bestanden bij). Bibliotheken krijgen hun lock-wijziging per PR via rangeStrategy update-lockfile."
+    "LOCKFILE-ONDERHOUD staat UIT (28-9-2026). Zo'n PR draait feitelijk `composer update` over alles, dus óók over de plugins en core die nog in composer.json staan; mergen + deployen zou dan via `composer install` andere pluginversies neerzetten dan er draaien (model B: de lock blijft op de installatieversie, de run werkt de bestanden bij). Bibliotheken krijgen hun lock-wijziging per PR via rangeStrategy update-lockfile.",
+    "INSTELLINGEN via het paneel op 28-09-2026 16:15: bibliotheken wekelijks (gebundeld in één PR), majors apart, security direct, met rust: dreejt/**, mintis/theme-core, mintis/installer, mintis/webfont-checker."
   ],
   "extends": [
     "config:recommended",
@@ -56,7 +57,10 @@
       ],
       "groupName": "composer-bibliotheken",
       "enabled": true,
-      "automerge": false
+      "automerge": false,
+      "schedule": [
+        "before 6am on monday"
+      ]
     },
     {
       "description": "Majors van bibliotheken: apart, ter review, met label.",
@@ -100,7 +104,7 @@
   ],
   "automerge": false,
   "schedule": [
-    "before 6am on the first day of the month"
+    "before 6am on monday"
   ],
   "lockFileMaintenance": {
     "enabled": false
