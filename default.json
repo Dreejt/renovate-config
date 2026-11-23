@@ -2,9 +2,10 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "description": [
     "BESLUIT 19/20-11-2026 (v2) — WordPress werkt de sites zelf bij (mu-plugin mintis-auto-updates). Renovate is de laag daarbovenop: het houdt composer.json en composer.lock in de repo gelijk met wat er draait, zodat Tjeerd dat niet lokaal met de hand hoeft te doen. ALLEEN WordPress-core en plugins. Bibliotheken, thema's en de basis van het thema staan UIT: een update daarvan kan het thema breken (Tjeerd, 20-11). Dit vervangt het besluit van 28-9 (alleen bibliotheken).",
-    "AUTOMERGE — AAN voor core en plugins, ook grote versies, want WordPress installeert die op de server ook zelf. Eén gebundelde wijziging per dag, rechtstreeks op de hoofdbranch (automergeType branch, geen PR), zonder tests (ignoreTests: er draait geen CI). Een samenvoeging deployt staging via Ploi; composer install zet dan alleen pakketten neer waarvan de versie in de lock veranderde, meestal de versie die WordPress er al had neergezet.",
+    "AUTOMERGE — AAN voor core en plugins, ook grote versies, want WordPress installeert die op de server ook zelf. Eén gebundelde wijziging zodra Renovate draait (zie SCHEMA), rechtstreeks op de hoofdbranch (automergeType branch, geen PR), zonder tests (ignoreTests: er draait geen CI). Een samenvoeging deployt staging via Ploi; composer install zet dan alleen pakketten neer waarvan de versie in de lock veranderde, meestal de versie die WordPress er al had neergezet.",
     "WACHTTIJD — minimumReleaseAge 1 dag: WordPress kijkt twee keer per dag en is dan vrijwel altijd eerder dan Renovate, zodat de terugzetcontrole van WordPress de update heeft gezien. Werkt alleen als het pakketregister een releasedatum meegeeft; nog na te gaan bij de eerste ronde (openstaand 0aa).",
     "MET RUST — eigen pakketten (dreejt/**, mintis/**): mintis-auto-updates staat bewust op een vaste versie, UpdraftPlus Premium en ACF Extended Pro komen uit een eigen zip. Die werk je zelf bij.",
+    "SCHEMA (23-11-2026) — geen tijdvenster en geen tussenstappen. Mend draait een repo waar nog nooit iets van Renovate is samengevoegd maar één keer per dag, op een moment dat Mend kiest; met 'before 6am' bleef tonguetieinstitute daardoor dagen liggen ('awaiting schedule'). separateMajorMinor false: altijd in één keer naar de nieuwste versie. Met tussenstappen (6.5.4 → 6.9.12 → 7) zou een deploy daartussen composer een oudere kern laten neerzetten dan WordPress er al had geïnstalleerd.",
     "LOCKFILE-ONDERHOUD staat UIT: zo'n ronde draait composer update over alles, dus ook over de bibliotheken die juist met rust moeten blijven.",
     "BEREIK — twee sloten op de deur, want een Bedrock-repo bevat véél meer dan de site zelf. (1) enabledManagers: alleen composer — geen npm (thema-builds), geen Dockerfile, geen GitHub Actions. (2) ignorePaths: alles onder web/ ligt buiten beeld. Daar staan meegecommitte composer.json's van plugins (acf-extended-pro/…/stripe, wp-sync-db), van WordPress-core zelf (wp-includes/sodium_compat) en van thema's. Die pakketten horen bij de plugin- of core-release en werk je bij door de plugin te bumpen, niet door hun libraries los te updaten. LET OP: ignorePaths vervangt de lijst uit config:recommended (:ignoreModulesAndTests) — vandaar dat vendor/ en node_modules hier opnieuw staan. Alleen de composer.json in de repo-root telt dus mee.",
     "rangeStrategy — zonder dit gebeurt er voor plugins NIETS. Constraints als ^6.4 laten een nieuwe 6.5 al toe, dus valt er in composer.json niets te wijzigen en opent Renovate geen PR — terwijl composer.lock op de oude versie blijft staan. Alleen exact gepinde pakketten (roots/wordpress) leverden zo een PR op. Met update-lockfile stelt Renovate ook de lock-wijziging voor.",
@@ -29,6 +30,7 @@
     "**/node_modules/**"
   ],
   "rangeStrategy": "update-lockfile",
+  "separateMajorMinor": false,
   "ignoreDeps": [
     "php"
   ],
@@ -67,7 +69,7 @@
       "automerge": false
     },
     {
-      "description": "WordPress-core en plugins: AAN, alle versies, één gebundelde wijziging per dag die Renovate zelf samenvoegt. Thema's staan er bewust niet bij.",
+      "description": "WordPress-core en plugins: AAN, alle versies, in één gebundelde wijziging naar de nieuwste versie, zonder tijdvenster, die Renovate zelf samenvoegt. Thema's staan er bewust niet bij.",
       "matchPackageNames": [
         "roots/wordpress{/,}**",
         "wpackagist-plugin/**",
@@ -80,7 +82,7 @@
       "enabled": true,
       "groupName": "wordpress-core-en-plugins",
       "schedule": [
-        "before 6am"
+        "at any time"
       ],
       "minimumReleaseAge": "1 day",
       "automerge": true,
